@@ -7,10 +7,6 @@ import StarterKit from '@tiptap/starter-kit';
 import type { JSX } from 'react';
 import { SmartPhraseExtension } from './SmartPhraseExtension';
 
-/**
- * Home page that greets the user and displays a list of patients.
- * @returns A React component that displays the home page.
- */
 export function SmartEditor(): JSX.Element {
   const content = '<p>Subtle rich text editor variant</p>';
 

@@ -3,11 +3,11 @@ import { JSX, useEffect, useImperativeHandle, useState } from 'react';
 import { SmartPhrase } from './SmartPhrase';
 import styles from './SmartPhraseDropdown.module.css';
 
-export type SmartPhraseDropdownProps = SuggestionProps<SmartPhrase, SmartPhrase> & {
+export interface SmartPhraseDropdownProps extends SuggestionProps<SmartPhrase, SmartPhrase> {
   ref: React.Ref<{
     onKeyDown: ({ event }: { event: KeyboardEvent }) => boolean;
   }>;
-};
+}
 
 export function SmartPhraseDropdown(props: SmartPhraseDropdownProps): JSX.Element {
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -63,7 +63,7 @@ export function SmartPhraseDropdown(props: SmartPhraseDropdownProps): JSX.Elemen
             key={index}
             onClick={() => selectItem(index)}
           >
-            {JSON.stringify(item)}
+            {item.label}
           </button>
         ))
       ) : (

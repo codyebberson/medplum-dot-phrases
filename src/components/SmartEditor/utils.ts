@@ -1,5 +1,6 @@
 import { computePosition, flip, shift } from '@floating-ui/dom';
-import { Editor, posToDOMRect } from '@tiptap/react';
+import { Content, Editor, posToDOMRect } from '@tiptap/react';
+import { EXTENSION_NAME } from './constants';
 
 /**
  * Updates the position of the suggestion dropdown based on the current selection in the editor.
@@ -21,4 +22,36 @@ export function updatePosition(editor: Editor, element: HTMLElement): void {
     element.style.left = `${x}px`;
     element.style.top = `${y}px`;
   });
+}
+
+export function convertTemplateToNodes(template: string): Content {
+  const parts = template.split('***');
+
+  if (parts.length === 1) {
+    return {
+      type: 'text',
+      text: template,
+    };
+  }
+
+  const nodes: Content[] = [];
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part) {
+      nodes.push({
+        type: 'text',
+        text: part,
+      });
+    }
+
+    if (i < parts.length - 1) {
+      nodes.push({
+        type: EXTENSION_NAME,
+        attrs: { label: '***' },
+      });
+    }
+  }
+
+  return nodes;
 }

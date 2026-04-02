@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: Copyright Orangebot, Inc. and Medplum contributors
+// SPDX-License-Identifier: Apache-2.0
+// Based on https://tiptap.dev/guide/custom-extensions#suggestion-extension
+
 import type { Attribute, Editor, KeyboardShortcutCommand } from '@tiptap/core';
 import { createInlineMarkdownSpec, Node } from '@tiptap/core';
 import type { DOMOutputSpec, NodeSpec } from '@tiptap/pm/model';
@@ -5,20 +9,21 @@ import { Node as ProseMirrorNode } from '@tiptap/pm/model';
 import { Plugin } from '@tiptap/pm/state';
 import { Suggestion } from '@tiptap/suggestion';
 import { EXTENSION_NAME } from './constants';
+import { SmartPlaceholder } from './SmartPhrase';
 import { getSuggestionOptions } from './SmartPhraseSuggestionOptions';
 
-export interface MentionOptions {}
+export interface SmartPhraseExtensionOptions {}
 
 const DefaultHTMLAttributes = {
   class: 'mention',
 };
 
-export const SmartPhraseExtension = Node.create<MentionOptions>({
+export const SmartPhraseExtension = Node.create<SmartPhraseExtensionOptions, SmartPlaceholder>({
   name: EXTENSION_NAME,
 
   priority: 101,
 
-  addOptions(): MentionOptions {
+  addOptions(): SmartPhraseExtensionOptions {
     return {};
   },
 
@@ -71,12 +76,15 @@ export const SmartPhraseExtension = Node.create<MentionOptions>({
   },
 
   renderHTML({ node }): DOMOutputSpec {
-    const suggestion = getSuggestionOptions(this.editor as Editor);
-    return ['span', DefaultHTMLAttributes, `${suggestion?.char ?? '@'}${node.attrs.label ?? node.attrs.id}`];
+    return ['span', DefaultHTMLAttributes, node.attrs.label];
+  },
+
+  renderText({ node }): string {
+    return node.attrs.label;
   },
 
   ...createInlineMarkdownSpec({
-    nodeName: 'mention',
+    nodeName: EXTENSION_NAME,
     name: '@',
     selfClosing: true,
     allowedAttributes: ['id', 'label', { name: 'mentionSuggestionChar', skipIfDefault: '@' }],
@@ -104,11 +112,6 @@ export const SmartPhraseExtension = Node.create<MentionOptions>({
         .join(' ');
     },
   }),
-
-  renderText({ node }): string {
-    const suggestion = getSuggestionOptions(this.editor as Editor);
-    return `${suggestion?.char ?? '@'}${node.attrs.label ?? node.attrs.id}`;
-  },
 
   addKeyboardShortcuts(): Record<string, KeyboardShortcutCommand> {
     return {
@@ -141,6 +144,11 @@ export const SmartPhraseExtension = Node.create<MentionOptions>({
 
           return isMention;
         }),
+
+      Tab: () => {
+        console.log('Tab key pressed');
+        return true;
+      },
     };
   },
 
