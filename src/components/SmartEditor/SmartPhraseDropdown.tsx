@@ -1,7 +1,7 @@
 import React, { JSX, useEffect, useImperativeHandle, useState } from 'react';
-import styles from './MentionList.module.css';
+import styles from './SmartPhraseDropdown.module.css';
 
-export interface MentionListProps {
+export interface SmartPhraseDropdownProps {
   items: string[];
   command: (props: { id: string }) => void;
   ref: React.Ref<{
@@ -9,7 +9,7 @@ export interface MentionListProps {
   }>;
 }
 
-export function MentionList(props: MentionListProps): JSX.Element {
+export function SmartPhraseDropdown(props: SmartPhraseDropdownProps): JSX.Element {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const selectItem = (index: number) => {

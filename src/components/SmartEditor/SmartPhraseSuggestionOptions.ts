@@ -1,10 +1,10 @@
 import { Editor } from '@tiptap/core';
 import { ReactRenderer } from '@tiptap/react';
 import type { SuggestionKeyDownProps, SuggestionOptions, SuggestionProps } from '@tiptap/suggestion';
-import { MentionList } from './MentionList';
+import { EXTENSION_NAME } from './constants';
+import { SmartPhraseDropdown } from './SmartPhraseDropdown';
 import { updatePosition } from './utils';
 
-const EXTENSION_NAME = 'mention';
 const optionsMap = new Map<Editor, SmartPhraseSuggestionOptions>();
 
 export function getSuggestionOptions(editor: Editor): SuggestionOptions {
@@ -100,7 +100,7 @@ class SmartPhraseSuggestionRenderer {
   component?: ReactRenderer;
 
   onStart(props: SuggestionProps): void {
-    this.component = new ReactRenderer(MentionList, {
+    this.component = new ReactRenderer(SmartPhraseDropdown, {
       props,
       editor: props.editor,
     });

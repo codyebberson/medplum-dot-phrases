@@ -3,7 +3,8 @@ import { createInlineMarkdownSpec, mergeAttributes, Node } from '@tiptap/core';
 import type { DOMOutputSpec } from '@tiptap/pm/model';
 import { Node as ProseMirrorNode } from '@tiptap/pm/model';
 import { Suggestion, type SuggestionOptions } from '@tiptap/suggestion';
-import { getSuggestionOptions } from './suggestion';
+import { getSuggestionOptions } from './SmartPhraseSuggestionOptions';
+import { EXTENSION_NAME } from './constants';
 
 export interface MentionOptions {}
 
@@ -11,8 +12,8 @@ const DefaultHTMLAttributes = {
   class: 'mention',
 };
 
-export const Mention = Node.create<MentionOptions>({
-  name: 'mention',
+export const SmartPhraseExtension = Node.create<MentionOptions>({
+  name: EXTENSION_NAME,
 
   priority: 101,
 
@@ -54,17 +55,6 @@ export const Mention = Node.create<MentionOptions>({
 
           return {
             'data-label': attributes.label,
-          };
-        },
-      },
-
-      // When there are multiple types of mentions, this attribute helps distinguish them
-      mentionSuggestionChar: {
-        default: '@',
-        parseHTML: (element) => element.getAttribute('data-mention-suggestion-char'),
-        renderHTML: (attributes) => {
-          return {
-            'data-mention-suggestion-char': attributes.mentionSuggestionChar,
           };
         },
       },

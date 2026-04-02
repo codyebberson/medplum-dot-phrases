@@ -5,7 +5,7 @@ import Highlight from '@tiptap/extension-highlight';
 import { useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import type { JSX } from 'react';
-import { Mention } from './mention';
+import { SmartPhraseExtension } from './SmartPhraseExtension';
 
 /**
  * Home page that greets the user and displays a list of patients.
@@ -16,7 +16,7 @@ export function SmartEditor(): JSX.Element {
 
   const editor = useEditor({
     shouldRerenderOnTransaction: true,
-    extensions: [StarterKit, Highlight, Mention],
+    extensions: [StarterKit, Highlight, SmartPhraseExtension],
     content,
   });
 
