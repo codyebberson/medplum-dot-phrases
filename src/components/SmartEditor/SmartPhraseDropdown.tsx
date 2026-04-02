@@ -1,22 +1,21 @@
-import React, { JSX, useEffect, useImperativeHandle, useState } from 'react';
+import type { SuggestionProps } from '@tiptap/suggestion';
+import { JSX, useEffect, useImperativeHandle, useState } from 'react';
+import { SmartPhrase } from './SmartPhrase';
 import styles from './SmartPhraseDropdown.module.css';
 
-export interface SmartPhraseDropdownProps {
-  items: string[];
-  command: (props: { id: string }) => void;
+export type SmartPhraseDropdownProps = SuggestionProps<SmartPhrase, SmartPhrase> & {
   ref: React.Ref<{
     onKeyDown: ({ event }: { event: KeyboardEvent }) => boolean;
   }>;
-}
+};
 
 export function SmartPhraseDropdown(props: SmartPhraseDropdownProps): JSX.Element {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const selectItem = (index: number) => {
     const item = props.items[index];
-
     if (item) {
-      props.command({ id: item });
+      props.command(item);
     }
   };
 
@@ -64,7 +63,7 @@ export function SmartPhraseDropdown(props: SmartPhraseDropdownProps): JSX.Elemen
             key={index}
             onClick={() => selectItem(index)}
           >
-            {item}
+            {JSON.stringify(item)}
           </button>
         ))
       ) : (

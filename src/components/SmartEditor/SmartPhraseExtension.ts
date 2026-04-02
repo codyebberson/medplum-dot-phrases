@@ -1,10 +1,11 @@
-import type { Editor } from '@tiptap/core';
-import { createInlineMarkdownSpec, mergeAttributes, Node } from '@tiptap/core';
-import type { DOMOutputSpec } from '@tiptap/pm/model';
+import type { Attribute, Editor, KeyboardShortcutCommand } from '@tiptap/core';
+import { createInlineMarkdownSpec, Node } from '@tiptap/core';
+import type { DOMOutputSpec, NodeSpec } from '@tiptap/pm/model';
 import { Node as ProseMirrorNode } from '@tiptap/pm/model';
-import { Suggestion, type SuggestionOptions } from '@tiptap/suggestion';
-import { getSuggestionOptions } from './SmartPhraseSuggestionOptions';
+import { Plugin } from '@tiptap/pm/state';
+import { Suggestion } from '@tiptap/suggestion';
 import { EXTENSION_NAME } from './constants';
+import { getSuggestionOptions } from './SmartPhraseSuggestionOptions';
 
 export interface MentionOptions {}
 
@@ -17,7 +18,7 @@ export const SmartPhraseExtension = Node.create<MentionOptions>({
 
   priority: 101,
 
-  addOptions() {
+  addOptions(): MentionOptions {
     return {};
   },
 
@@ -29,7 +30,7 @@ export const SmartPhraseExtension = Node.create<MentionOptions>({
 
   atom: true,
 
-  addAttributes() {
+  addAttributes(): Record<string, Attribute> {
     return {
       id: {
         default: null,
@@ -61,7 +62,7 @@ export const SmartPhraseExtension = Node.create<MentionOptions>({
     };
   },
 
-  parseHTML() {
+  parseHTML(): NodeSpec['parseDOM'] {
     return [
       {
         tag: `span[data-type="${this.name}"]`,
@@ -69,13 +70,9 @@ export const SmartPhraseExtension = Node.create<MentionOptions>({
     ];
   },
 
-  renderHTML({ node, HTMLAttributes }) {
+  renderHTML({ node }): DOMOutputSpec {
     const suggestion = getSuggestionOptions(this.editor as Editor);
-    const html = renderHTML(node, suggestion);
-    if (typeof html === 'string') {
-      return ['span', mergeAttributes({ 'data-type': this.name }, DefaultHTMLAttributes, HTMLAttributes), html];
-    }
-    return html;
+    return ['span', DefaultHTMLAttributes, `${suggestion?.char ?? '@'}${node.attrs.label ?? node.attrs.id}`];
   },
 
   ...createInlineMarkdownSpec({
@@ -108,12 +105,12 @@ export const SmartPhraseExtension = Node.create<MentionOptions>({
     },
   }),
 
-  renderText({ node }) {
+  renderText({ node }): string {
     const suggestion = getSuggestionOptions(this.editor as Editor);
-    return renderText(node, suggestion);
+    return `${suggestion?.char ?? '@'}${node.attrs.label ?? node.attrs.id}`;
   },
 
-  addKeyboardShortcuts() {
+  addKeyboardShortcuts(): Record<string, KeyboardShortcutCommand> {
     return {
       Backspace: () =>
         this.editor.commands.command(({ tr, state }) => {
@@ -147,27 +144,7 @@ export const SmartPhraseExtension = Node.create<MentionOptions>({
     };
   },
 
-  addProseMirrorPlugins() {
+  addProseMirrorPlugins(): Plugin[] {
     return [Suggestion(getSuggestionOptions(this.editor as Editor))];
   },
 });
-
-/**
- * A function to render the text of a mention.
- * @param props The render props
- * @returns The text
- * @example ({ options, node }) => `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`
- */
-function renderText(node: ProseMirrorNode, suggestion: SuggestionOptions | null): string {
-  return `${suggestion?.char ?? '@'}${node.attrs.label ?? node.attrs.id}`;
-}
-
-/**
- * A function to render the HTML of a mention.
- * @param props The render props
- * @returns The HTML as a ProseMirror DOM Output Spec
- * @example ({ options, node }) => ['span', { 'data-type': 'mention' }, `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`]
- */
-function renderHTML(node: ProseMirrorNode, suggestion: SuggestionOptions | null): DOMOutputSpec {
-  return ['span', DefaultHTMLAttributes, `${suggestion?.char ?? '@'}${node.attrs.label ?? node.attrs.id}`];
-}
