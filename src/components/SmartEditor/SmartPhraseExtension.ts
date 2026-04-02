@@ -11,6 +11,7 @@ import { Suggestion } from '@tiptap/suggestion';
 import { EXTENSION_NAME } from './constants';
 import { SmartPlaceholder } from './SmartPhrase';
 import { getSuggestionOptions } from './SmartPhraseSuggestionOptions';
+import { selectNextPlaceholder, selectPrevPlaceholder } from './utils';
 
 export interface SmartPhraseExtensionOptions {}
 
@@ -31,7 +32,7 @@ export const SmartPhraseExtension = Node.create<SmartPhraseExtensionOptions, Sma
 
   inline: true,
 
-  selectable: false,
+  selectable: true,
 
   atom: true,
 
@@ -145,10 +146,11 @@ export const SmartPhraseExtension = Node.create<SmartPhraseExtensionOptions, Sma
           return isMention;
         }),
 
-      Tab: () => {
-        console.log('Tab key pressed');
-        return true;
-      },
+      Tab: () => selectNextPlaceholder(this.editor),
+      'Shift-Tab': () => selectPrevPlaceholder(this.editor),
+
+      F2: () => selectNextPlaceholder(this.editor),
+      'Shift-F2': () => selectPrevPlaceholder(this.editor),
     };
   },
 

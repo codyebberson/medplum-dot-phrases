@@ -55,7 +55,12 @@ export class SmartPhraseSuggestionOptions implements SuggestionOptions<SmartPhra
   }
 
   async items({ query }: { query: string }): Promise<SmartPhrase[]> {
-    return defaultSmartPhrases.filter((item) => item.id.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5);
+    return defaultSmartPhrases
+      .filter(
+        (item) =>
+          item.id.toLowerCase().includes(query.toLowerCase()) || item.label.toLowerCase().includes(query.toLowerCase())
+      )
+      .slice(0, 5);
   }
 
   render(): SmartPhraseSuggestionRenderer {

@@ -63,7 +63,7 @@ export function SmartPhraseDropdown(props: SmartPhraseDropdownProps): JSX.Elemen
             key={index}
             onClick={() => selectItem(index)}
           >
-            {item.label}
+            {item.id}: {item.label}
           </button>
         ))
       ) : (

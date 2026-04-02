@@ -5,7 +5,7 @@
 
   .mention {
     background-color: #fff8ff;
-    border-radius: 0.4rem;
+    border-radius: 4px;
     box-decoration-break: clone;
     color: #800080;
     padding: 0 1px;
@@ -16,5 +16,10 @@
      around inline mention nodes in the editor (prevents caret from getting "stuck"). */
       content: '\200B';
     }
+  }
+
+  span.mention.ProseMirror-selectednode {
+    background: Highlight;
+    color: HighlightText;
   }
 }
