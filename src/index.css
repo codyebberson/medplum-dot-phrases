@@ -8,8 +8,12 @@
     border-radius: 0.4rem;
     box-decoration-break: clone;
     color: #800080;
-    padding: 0.1rem 0.3rem;
+    padding: 0 1px;
+    cursor: pointer;
+
     &::after {
+      /* Insert a zero-width space to ensure proper cursor movement and selection behavior
+     around inline mention nodes in the editor (prevents caret from getting "stuck"). */
       content: '\200B';
     }
   }

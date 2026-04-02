@@ -1,10 +1,65 @@
+import { Editor } from '@tiptap/core';
 import { ReactRenderer } from '@tiptap/react';
-import { type SuggestionOptions } from '@tiptap/suggestion';
+import type { SuggestionKeyDownProps, SuggestionOptions, SuggestionProps } from '@tiptap/suggestion';
 import { MentionList } from './MentionList';
 import { updatePosition } from './utils';
 
-export const suggestion: Omit<SuggestionOptions, 'editor'> = {
-  items: async ({ query }) => {
+const EXTENSION_NAME = 'mention';
+const optionsMap = new Map<Editor, SmartPhraseSuggestionOptions>();
+
+export function getSuggestionOptions(editor: Editor): SuggestionOptions {
+  let options = optionsMap.get(editor);
+  if (!options) {
+    options = new SmartPhraseSuggestionOptions(editor);
+    optionsMap.set(editor, options);
+  }
+  return options;
+}
+
+class SmartPhraseSuggestionOptions implements SuggestionOptions {
+  readonly editor: Editor;
+
+  constructor(editor: Editor) {
+    this.editor = editor;
+  }
+
+  command({ editor, range, props }: { editor: any; range: any; props: any }) {
+    // increase range.to by one when the next node is of type "text"
+    // and starts with a space character
+    const nodeAfter = editor.view.state.selection.$to.nodeAfter;
+    const overrideSpace = nodeAfter?.text?.startsWith(' ');
+
+    if (overrideSpace) {
+      range.to += 1;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .insertContentAt(range, [
+        {
+          type: EXTENSION_NAME,
+          attrs: { ...props, mentionSuggestionChar: '@' },
+        },
+        {
+          type: 'text',
+          text: ' ',
+        },
+      ])
+      .run();
+
+    // get reference to `window` object from editor element, to support cross-frame JS usage
+    editor.view.dom.ownerDocument.defaultView?.getSelection()?.collapseToEnd();
+  }
+
+  allow({ state, range }: { state: any; range: any }) {
+    const $from = state.doc.resolve(range.from);
+    const type = state.schema.nodes[EXTENSION_NAME];
+    const allow = !!$from.parent.type.contentMatch.matchType(type);
+    return allow;
+  }
+
+  async items({ query }: { query: string }): Promise<string[]> {
     return [
       'Lea Thompson',
       'Cyndi Lauper',
@@ -34,53 +89,60 @@ export const suggestion: Omit<SuggestionOptions, 'editor'> = {
     ]
       .filter((item) => item.toLowerCase().startsWith(query.toLowerCase()))
       .slice(0, 5);
-  },
+  }
 
-  render: () => {
-    let component: ReactRenderer;
+  render() {
+    return new SmartPhraseSuggestionRenderer();
+  }
+}
 
-    return {
-      onStart: (props) => {
-        component = new ReactRenderer(MentionList, {
-          props,
-          editor: props.editor,
-        });
+class SmartPhraseSuggestionRenderer {
+  component?: ReactRenderer;
 
-        if (!props.clientRect) {
-          return;
-        }
+  onStart(props: SuggestionProps): void {
+    this.component = new ReactRenderer(MentionList, {
+      props,
+      editor: props.editor,
+    });
 
-        component.element.style.position = 'absolute';
+    if (!props.clientRect) {
+      return;
+    }
 
-        document.body.appendChild(component.element);
+    this.component.element.style.position = 'absolute';
 
-        updatePosition(props.editor, component.element);
-      },
+    document.body.appendChild(this.component.element);
 
-      onUpdate(props) {
-        component.updateProps(props);
+    updatePosition(props.editor, this.component.element);
+  }
 
-        if (!props.clientRect) {
-          return;
-        }
+  onUpdate(props: SuggestionProps): void {
+    const component = this.component as ReactRenderer;
+    component.updateProps(props);
 
-        updatePosition(props.editor, component.element);
-      },
+    if (!props.clientRect) {
+      return;
+    }
 
-      onKeyDown(props) {
-        if (props.event.key === 'Escape') {
-          component.destroy();
+    updatePosition(props.editor, component.element);
+  }
 
-          return true;
-        }
+  onKeyDown(props: SuggestionKeyDownProps): boolean {
+    const component = this.component as ReactRenderer;
 
-        return (component.ref as any)?.onKeyDown(props);
-      },
+    if (props.event.key === 'Escape') {
+      component.destroy();
+      return true;
+    }
 
-      onExit() {
-        component.element.remove();
-        component.destroy();
-      },
-    };
-  },
-};
+    return (component.ref as any)?.onKeyDown(props);
+  }
+
+  onExit(): void {
+    const component = this.component as ReactRenderer;
+    if (component) {
+      component.element.remove();
+      component.destroy();
+    }
+  }
+}

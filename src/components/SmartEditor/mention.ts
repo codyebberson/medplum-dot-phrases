@@ -3,23 +3,13 @@ import { createInlineMarkdownSpec, mergeAttributes, Node } from '@tiptap/core';
 import type { DOMOutputSpec } from '@tiptap/pm/model';
 import { Node as ProseMirrorNode } from '@tiptap/pm/model';
 import { Suggestion, type SuggestionOptions } from '@tiptap/suggestion';
-import { getSuggestionOptions } from './get-default-suggestion-attributes';
-import { suggestion } from './suggestion';
+import { getSuggestionOptions } from './suggestion';
 
 export interface MentionOptions {}
 
 const DefaultHTMLAttributes = {
   class: 'mention',
 };
-
-function getSuggestion(editor: Editor) {
-  return getSuggestionOptions({
-    editor,
-    overrideSuggestionOptions: suggestion,
-    extensionName: 'mention',
-    char: '@',
-  });
-}
 
 export const Mention = Node.create<MentionOptions>({
   name: 'mention',
@@ -90,7 +80,7 @@ export const Mention = Node.create<MentionOptions>({
   },
 
   renderHTML({ node, HTMLAttributes }) {
-    const suggestion = getSuggestion(this.editor as Editor);
+    const suggestion = getSuggestionOptions(this.editor as Editor);
     const html = renderHTML(node, suggestion);
     if (typeof html === 'string') {
       return ['span', mergeAttributes({ 'data-type': this.name }, DefaultHTMLAttributes, HTMLAttributes), html];
@@ -129,7 +119,7 @@ export const Mention = Node.create<MentionOptions>({
   }),
 
   renderText({ node }) {
-    const suggestion = getSuggestion(this.editor as Editor);
+    const suggestion = getSuggestionOptions(this.editor as Editor);
     return renderText(node, suggestion);
   },
 
@@ -168,7 +158,7 @@ export const Mention = Node.create<MentionOptions>({
   },
 
   addProseMirrorPlugins() {
-    return [Suggestion(getSuggestion(this.editor as Editor))];
+    return [Suggestion(getSuggestionOptions(this.editor as Editor))];
   },
 });
 
