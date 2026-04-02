@@ -1,7 +1,6 @@
 import { computePosition, flip, shift } from '@floating-ui/dom';
-import type { MentionOptions } from '@tiptap/extension-mention';
 import { Editor, posToDOMRect, ReactRenderer } from '@tiptap/react';
-
+import type { MentionOptions } from './mention';
 import { MentionList } from './MentionList';
 
 const updatePosition = (editor: Editor, element: HTMLElement) => {
@@ -22,7 +21,7 @@ const updatePosition = (editor: Editor, element: HTMLElement) => {
 };
 
 export const suggestion: MentionOptions['suggestion'] = {
-  items: ({ query }) => {
+  items: async ({ query }) => {
     return [
       'Lea Thompson',
       'Cyndi Lauper',
