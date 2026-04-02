@@ -1,26 +1,9 @@
-import { computePosition, flip, shift } from '@floating-ui/dom';
-import { Editor, posToDOMRect, ReactRenderer } from '@tiptap/react';
-import type { MentionOptions } from './mention';
+import { ReactRenderer } from '@tiptap/react';
+import { type SuggestionOptions } from '@tiptap/suggestion';
 import { MentionList } from './MentionList';
+import { updatePosition } from './utils';
 
-const updatePosition = (editor: Editor, element: HTMLElement) => {
-  const virtualElement = {
-    getBoundingClientRect: () => posToDOMRect(editor.view, editor.state.selection.from, editor.state.selection.to),
-  };
-
-  computePosition(virtualElement, element, {
-    placement: 'bottom-start',
-    strategy: 'absolute',
-    middleware: [shift(), flip()],
-  }).then(({ x, y, strategy }) => {
-    element.style.width = 'max-content';
-    element.style.position = strategy;
-    element.style.left = `${x}px`;
-    element.style.top = `${y}px`;
-  });
-};
-
-export const suggestion: MentionOptions['suggestion'] = {
+export const suggestion: Omit<SuggestionOptions, 'editor'> = {
   items: async ({ query }) => {
     return [
       'Lea Thompson',

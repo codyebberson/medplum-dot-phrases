@@ -6,66 +6,11 @@ import { Suggestion, type SuggestionOptions } from '@tiptap/suggestion';
 import { getSuggestionOptions } from './get-default-suggestion-attributes';
 import { suggestion } from './suggestion';
 
-// See `addAttributes` below
-export interface MentionNodeAttrs {
-  /**
-   * The identifier for the selected item that was mentioned, stored as a `data-id`
-   * attribute.
-   */
-  id: string | null;
-  /**
-   * The label to be rendered by the editor as the displayed text for this mentioned
-   * item, if provided. Stored as a `data-label` attribute. See `renderLabel`.
-   */
-  label?: string | null;
-  /**
-   * The character that triggers the suggestion, stored as
-   * `data-mention-suggestion-char` attribute.
-   */
-  mentionSuggestionChar?: string;
-}
+export interface MentionOptions {}
 
-export interface MentionOptions<SuggestionItem = any, Attrs extends Record<string, any> = MentionNodeAttrs> {
-  /**
-   * The HTML attributes for a mention node.
-   * @default {}
-   * @example { class: 'foo' }
-   */
-  HTMLAttributes: Record<string, any>;
-
-  /**
-   * A function to render the text of a mention.
-   * @param props The render props
-   * @returns The text
-   * @example ({ options, node }) => `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`
-   */
-  renderText: (props: {
-    options: MentionOptions<SuggestionItem, Attrs>;
-    node: ProseMirrorNode;
-    suggestion: SuggestionOptions | null;
-  }) => string;
-
-  /**
-   * A function to render the HTML of a mention.
-   * @param props The render props
-   * @returns The HTML as a ProseMirror DOM Output Spec
-   * @example ({ options, node }) => ['span', { 'data-type': 'mention' }, `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`]
-   */
-  renderHTML: (props: {
-    options: MentionOptions<SuggestionItem, Attrs>;
-    node: ProseMirrorNode;
-    suggestion: SuggestionOptions | null;
-  }) => DOMOutputSpec;
-
-  /**
-   * The suggestion options, when you want to support only one trigger. To support multiple triggers, use the
-   * `suggestions` parameter instead.
-   *
-   * @default {}
-   * @example { char: '@', pluginKey: MentionPluginKey, command: ({ editor, range, props }) => { ... } }
-   */
-  suggestion: Omit<SuggestionOptions<SuggestionItem, Attrs>, 'editor'>;
-}
+const DefaultHTMLAttributes = {
+  class: 'mention',
+};
 
 function getSuggestion(editor: Editor) {
   return getSuggestionOptions({
@@ -76,34 +21,13 @@ function getSuggestion(editor: Editor) {
   });
 }
 
-/**
- * This extension allows you to insert mentions into the editor.
- * @see https://www.tiptap.dev/api/extensions/mention
- */
 export const Mention = Node.create<MentionOptions>({
   name: 'mention',
 
   priority: 101,
 
   addOptions() {
-    return {
-      HTMLAttributes: {
-        class: 'mention',
-      },
-      renderText({ node, suggestion }) {
-        return `${suggestion?.char ?? '@'}${node.attrs.label ?? node.attrs.id}`;
-      },
-      deleteTriggerWithBackspace: false,
-      renderHTML({ options, node, suggestion }) {
-        return [
-          'span',
-          mergeAttributes(this.HTMLAttributes, options.HTMLAttributes),
-          `${suggestion?.char ?? '@'}${node.attrs.label ?? node.attrs.id}`,
-        ];
-      },
-      suggestions: [],
-      suggestion: {},
-    };
+    return {};
   },
 
   group: 'inline',
@@ -167,20 +91,9 @@ export const Mention = Node.create<MentionOptions>({
 
   renderHTML({ node, HTMLAttributes }) {
     const suggestion = getSuggestion(this.editor as Editor);
-
-    const mergedSuggestion = {
-      ...suggestion,
-      editor: this.editor as Editor,
-    };
-
-    const html = this.options.renderHTML({
-      options: this.options,
-      node,
-      suggestion,
-    });
-
+    const html = renderHTML(node, suggestion);
     if (typeof html === 'string') {
-      return ['span', mergeAttributes({ 'data-type': this.name }, this.options.HTMLAttributes, HTMLAttributes), html];
+      return ['span', mergeAttributes({ 'data-type': this.name }, DefaultHTMLAttributes, HTMLAttributes), html];
     }
     return html;
   },
@@ -217,12 +130,7 @@ export const Mention = Node.create<MentionOptions>({
 
   renderText({ node }) {
     const suggestion = getSuggestion(this.editor as Editor);
-    const args = {
-      options: this.options,
-      node,
-      suggestion,
-    };
-    return this.options.renderText(args);
+    return renderText(node, suggestion);
   },
 
   addKeyboardShortcuts() {
@@ -251,11 +159,7 @@ export const Mention = Node.create<MentionOptions>({
           });
 
           if (isMention) {
-            tr.insertText(
-              mentionNode.attrs.mentionSuggestionChar,
-              mentionPos,
-              mentionPos + mentionNode.nodeSize
-            );
+            tr.insertText(mentionNode.attrs.mentionSuggestionChar, mentionPos, mentionPos + mentionNode.nodeSize);
           }
 
           return isMention;
@@ -267,3 +171,23 @@ export const Mention = Node.create<MentionOptions>({
     return [Suggestion(getSuggestion(this.editor as Editor))];
   },
 });
+
+/**
+ * A function to render the text of a mention.
+ * @param props The render props
+ * @returns The text
+ * @example ({ options, node }) => `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`
+ */
+function renderText(node: ProseMirrorNode, suggestion: SuggestionOptions | null): string {
+  return `${suggestion?.char ?? '@'}${node.attrs.label ?? node.attrs.id}`;
+}
+
+/**
+ * A function to render the HTML of a mention.
+ * @param props The render props
+ * @returns The HTML as a ProseMirror DOM Output Spec
+ * @example ({ options, node }) => ['span', { 'data-type': 'mention' }, `${options.suggestion.char}${node.attrs.label ?? node.attrs.id}`]
+ */
+function renderHTML(node: ProseMirrorNode, suggestion: SuggestionOptions | null): DOMOutputSpec {
+  return ['span', DefaultHTMLAttributes, `${suggestion?.char ?? '@'}${node.attrs.label ?? node.attrs.id}`];
+}
