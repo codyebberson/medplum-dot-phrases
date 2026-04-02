@@ -1,0 +1,33 @@
+/* Dropdown menu */
+.dropdownMenu {
+  background: var(--mantine-color-body);
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: 0.7rem;
+  box-shadow: var(--mantine-shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  overflow: auto;
+  padding: 0.4rem;
+  position: relative;
+
+  button {
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    display: flex;
+    gap: 0.25rem;
+    outline: none;
+    text-align: left;
+    width: 100%;
+
+    &:hover,
+    &:hover.isSelected {
+      background-color: var(--mantine-color-default-hover);
+    }
+
+    &.isSelected {
+      background-color: var(--mantine-color-anchor);
+    }
+  }
+}

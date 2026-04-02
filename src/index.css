@@ -1,0 +1,16 @@
+.tiptap {
+  :first-child {
+    margin-top: 0;
+  }
+
+  .mention {
+    background-color: #fff8ff;
+    border-radius: 0.4rem;
+    box-decoration-break: clone;
+    color: #800080;
+    padding: 0.1rem 0.3rem;
+    &::after {
+      content: '\200B';
+    }
+  }
+}
