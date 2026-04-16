@@ -22,7 +22,7 @@
     "@mantine/spotlight": "8.3.18",
     "@mantine/tiptap": "8.3.18",
     "@medplum/core": "5.1.6",
-    "@medplum/eslint-config": "5.1.6",
+    "@medplum/eslint-config": "5.1.8",
     "@medplum/fhirtypes": "5.1.6",
     "@medplum/react": "5.1.6",
     "@tabler/icons-react": "3.41.0",
